@@ -79,7 +79,7 @@ def syncFromSynapse(syn, entity, path=None, ifcollision='overwrite.local', allFi
     skip_this_result = False
     for result in results:
         for extension in exclude:
-            if result['name'].endswith(extension):
+            if 'name' in result and result['name'].endswith(extension):
                 print('skipping '+result['name']+ ' because '+extension +' in exclude list')
                 skip_this_result = True
         if skip_this_result:
@@ -108,7 +108,8 @@ def syncFromSynapse(syn, entity, path=None, ifcollision='overwrite.local', allFi
         if isinstance(ent, File):
             allFiles.append(ent)
         else:
-            raise ValueError("The provided id: %s is was neither a container nor a File" % id)
+            print("The provided id: %s is was neither a container nor a File. Continue.." % id)
+#            raise ValueError("The provided id: %s is was neither a container nor a File" % id)
 
     if path is not None:  #If path is None files are stored in cache.
         filename = os.path.join(path, MANIFEST_FILENAME)
