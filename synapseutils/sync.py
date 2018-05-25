@@ -76,11 +76,14 @@ def syncFromSynapse(syn, entity, path=None, ifcollision='overwrite.local', allFi
     id = id_of(entity)
     results = syn.getChildren(id)
     zero_results = True
+    skip_this_result = False
     for result in results:
         for extension in exclude:
             if result['name'].endswith(extension):
                 print('skipping '+result['name']+ ' because '+extension +' in exclude list')
-                continue
+                skip_this_result = True
+        if skip_this_result:
+            continue
         zero_results = False
         if is_container(result):
             if path is not None:  #If we are downloading outside cache create directory.
