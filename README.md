@@ -1,3 +1,5 @@
+Modifications so that sync does not download *bam files.
+
 Python Synapse Client
 =====================
 

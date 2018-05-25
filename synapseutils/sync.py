@@ -23,7 +23,7 @@ MANIFEST_FILENAME = 'SYNAPSE_METADATA_MANIFEST.tsv'
 DEFAULT_GENERATED_MANIFEST_KEYS = ['path', 'parent', 'name', 'synapseStore', 'contentType', 'used',
             'executed', 'activityName', 'activityDescription']
 
-def syncFromSynapse(syn, entity, path=None, ifcollision='overwrite.local', allFiles = None, followLink=False):
+def syncFromSynapse(syn, entity, path=None, ifcollision='overwrite.local', allFiles = None, followLink=False, exclude=[]):
     """Synchronizes all the files in a folder (including subfolders) from Synapse and adds a readme manifest with file metadata.
 
     :param syn:    A synapse object as obtained with syn = synapseclient.login()
@@ -40,6 +40,10 @@ def syncFromSynapse(syn, entity, path=None, ifcollision='overwrite.local', allFi
 
     :param followLink:  Determines whether the link returns the target Entity.
                         Defaults to False
+
+    :param exclude: Exclude files with certain extensions. e.g. ['.bam', '.gz'] will excluded *.bam and *.gz files
+                        Defaults to exclude nothing
+                    NOTE!!: This option is only in this modified version, not in the official code
 
     :returns: list of entities (files, tables, links)
 
@@ -67,11 +71,16 @@ def syncFromSynapse(syn, entity, path=None, ifcollision='overwrite.local', allFi
             print(f.path)
 
     """
+    if type(exclude) is not list: exclude = [exclude]
     if allFiles is None: allFiles = list()
     id = id_of(entity)
     results = syn.getChildren(id)
     zero_results = True
     for result in results:
+        for extension in exclude:
+            if result['name'].endswith(extension):
+                print('skipping '+result['name']+ ' because '+extension +' in exclude list')
+                continue
         zero_results = False
         if is_container(result):
             if path is not None:  #If we are downloading outside cache create directory.
@@ -84,7 +93,7 @@ def syncFromSynapse(syn, entity, path=None, ifcollision='overwrite.local', allFi
                 print('making dir', new_path)
             else:
                 new_path = None
-            syncFromSynapse(syn, result['id'], new_path, ifcollision, allFiles, followLink=followLink)
+            syncFromSynapse(syn, result['id'], new_path, ifcollision, allFiles, followLink=followLink, exclude = exclude)
         else:
             ent = syn.get(result['id'], downloadLocation = path, ifcollision = ifcollision, followLink=followLink)
             if isinstance(ent, File):
